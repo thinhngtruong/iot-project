@@ -66,10 +66,12 @@ class Dashboard extends Component {
         const tempValue = rootRef.child("Temp")
         const datetime = rootRef.child("DateTime")
         humidityValue.on("value", snap => {
-            let deltaSecond = this.state.datetime.substr(16, 2) - this.state.prevDateTime.substr(16, 2)
+            let deltaSecond = this.state.datetime.substr(17, 2) - this.state.prevDateTime.substr(17, 2)
             if (deltaSecond < 0 && deltaSecond > -58) {
-                deltaSecond = 60 - this.state.prevDateTime.substr(16, 2)
+                deltaSecond = 60 - this.state.prevDateTime.substr(17, 2)
             }
+            console.log(this.state.datetime.substr(17, 2))
+            console.log(this.state.prevDateTime.substr(17, 2))
             if (emailsSubscriptionChart.data.labels.length >= 12) {
                 emailsSubscriptionChart.data.labels.splice(0, 1)
                 emailsSubscriptionChart.data.series[0].splice(0, 1)
@@ -82,9 +84,9 @@ class Dashboard extends Component {
             })
         })
         tempValue.on("value", snap => {
-            let deltaSecond = this.state.datetime.substr(16, 2) - this.state.prevDateTime.substr(16, 2)
+            let deltaSecond = this.state.datetime.substr(17, 2) - this.state.prevDateTime.substr(17, 2)
             if (deltaSecond < 0) {
-                deltaSecond = 60 - this.state.prevDateTime.substr(16, 2)
+                deltaSecond = 60 - this.state.prevDateTime.substr(17, 2)
             }
             if (dailySalesChart.data.labels.length >= 12) {
                 dailySalesChart.data.labels.splice(0, 1)

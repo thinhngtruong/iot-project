@@ -18,6 +18,10 @@ import { dailySalesChart, emailsSubscriptionChart } from "variables/charts.js";
 import dashboardStyle from "assets/jss/material-dashboard-react/views/dashboardStyle.js";
 import Snackbar from "components/Snackbar/Snackbar.js";
 import LocationOnIcon from '@material-ui/icons/LocationOn';
+import WhatshotIcon from '@material-ui/icons/Whatshot';
+import NatureIcon from '@material-ui/icons/Nature';
+import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
+import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 import * as Firebase from 'firebase'
 
 class Dashboard extends Component {
@@ -30,7 +34,12 @@ class Dashboard extends Component {
             prevDateTime: '',
             updateTempTime: 0,
             updateHumiTime: 0,
-            openAlert: false
+            openAlert: false,
+            CO2ppm: 0,
+            AirQuality: 0,
+            apiMinTemp: 0,
+            apiMaxTemp: 0,
+            apiDateTime: ''
         }
     }
 
@@ -65,13 +74,13 @@ class Dashboard extends Component {
         const humidityValue = rootRef.child("Humidity")
         const tempValue = rootRef.child("Temp")
         const datetime = rootRef.child("DateTime")
+        const AirQuality = rootRef.child("AirQuality")
+        const CO2ppm = rootRef.child("CO2ppm")
         humidityValue.on("value", snap => {
             let deltaSecond = this.state.datetime.substr(17, 2) - this.state.prevDateTime.substr(17, 2)
             if (deltaSecond < 0 && deltaSecond > -58) {
                 deltaSecond = 60 - this.state.prevDateTime.substr(17, 2)
             }
-            console.log(this.state.datetime.substr(17, 2))
-            console.log(this.state.prevDateTime.substr(17, 2))
             if (emailsSubscriptionChart.data.labels.length >= 12) {
                 emailsSubscriptionChart.data.labels.splice(0, 1)
                 emailsSubscriptionChart.data.series[0].splice(0, 1)
@@ -105,11 +114,41 @@ class Dashboard extends Component {
                 datetime: snap.val()
             })
         })
+        AirQuality.on("value", snap => {
+            this.setState({
+                AirQuality: snap.val()
+            })
+        })
+        CO2ppm.on("value", snap => {
+            this.setState({
+                CO2ppm: snap.val()
+            })
+        })
+
+        fetch("http://dataservice.accuweather.com/forecasts/v1/daily/1day/353981?apikey=TAuyA2m9DeTqcQMcLiHtte5fNueGB38A")
+            .then(res => res.json())
+            .then(
+                (result) => {
+                    let data = result.DailyForecasts[0]
+                    let dateTime = data.Date.substring(0, 10)
+                    let day = dateTime.substring(8, 10);
+                    let month = dateTime.substring(5, 7);
+                    let year = dateTime.substring(0, 4);
+                    let datetime = (day + "-" + month + "-" + year + " 00:00:00");
+                    let maxTemp = Math.round((data.Temperature.Maximum.Value - 32) * 5 / 9);
+                    let minTemp = Math.round((data.Temperature.Minimum.Value - 32) * 5 / 9);
+                    this.setState({
+                        apiMaxTemp: maxTemp,
+                        apiMinTemp: minTemp,
+                        apiDateTime: datetime
+                    })
+                })
     }
 
     render() {
         let { classes } = this.props
-        let { humidity, temp, datetime, updateHumiTime, updateTempTime } = this.state
+        let { humidity, temp, datetime, updateHumiTime, updateTempTime,
+            CO2ppm, AirQuality, apiDateTime, apiMaxTemp, apiMinTemp } = this.state
 
         return (
             <div>
@@ -134,33 +173,76 @@ class Dashboard extends Component {
                                 </h4>
                             </CardHeader>
                             <CardBody style={{ fontSize: "17px" }}>
-                                <div>
-                                    <LocationOnIcon /> Vị trí: thành phố Hồ Chí Minh
+                                <GridContainer>
+                                    <GridItem xs={12} sm={6}>
+                                        <div>
+                                            <LocationOnIcon /> Vị trí: thành phố Hồ Chí Minh
                                 </div>
-                                <div>
-                                    <AccessTime />
-                                    &nbsp;
-                                    Thời gian đo được:
-                                    &nbsp;
+                                        <div>
+                                            <AccessTime />
+                                            &nbsp;
+                                            Thời gian đo được:
+                                            &nbsp;
                                     {datetime === 0 ? 'None' : datetime}
-                                </div>
-                                <div>
-                                    <OpacityIcon />
-                                    &nbsp;
-                                    Độ ẩm:
-                                    &nbsp;
+                                        </div>
+                                        <div>
+                                            <OpacityIcon />
+                                            &nbsp;
+                                            Độ ẩm:
+                                            &nbsp;
                                     {humidity === 0 ? 'None' : humidity}
-                                </div>
-                                <div>
-                                    <AcUnitIcon />
-                                    &nbsp;
-                                    Nhiệt độ:
-                                    &nbsp;
+                                        </div>
+                                        <div>
+                                            <AcUnitIcon />
+                                            &nbsp;
+                                            Nhiệt độ:
+                                            &nbsp;
                                     {temp === 0 ? 'None' : temp}
-                                </div>
-                                <div>{this.state.displayName}</div>
-                                <div>{this.state.email}</div>
-
+                                        </div>
+                                        <div>
+                                            <NatureIcon />
+                                            &nbsp;
+                                            Chất lượng không khí:
+                                            &nbsp;
+                                    {AirQuality === 0 ? 'None' : AirQuality}
+                                        </div>
+                                        <div>
+                                            <WhatshotIcon />
+                                            &nbsp;
+                                            Nồng độ CO2 trong không khí:
+                                            &nbsp;
+                                    {CO2ppm === 0 ? 'None' : CO2ppm}
+                                        </div>
+                                    </GridItem>
+                                    <GridItem xs={12} sm={6}>
+                                        <div>
+                                            <img src="https://downloads.accuweather.com/assets/images/logo_v2.png" 
+                                            alt="icon"
+                                            style={{width: "450px", height: "70px", marginBottom: "15px"}}/>
+                                        </div>
+                                        <div>
+                                            <AccessTime />
+                                            &nbsp;
+                                            Thời gian đo được:
+                                            &nbsp;
+                                    {apiDateTime === 0 ? 'None' : apiDateTime}
+                                        </div>
+                                        <div>
+                                            <ArrowDownwardIcon />
+                                            &nbsp;
+                                            Nhiệt độ thấp nhất:
+                                            &nbsp;
+                                    {apiMinTemp === 0 ? 'None' : apiMinTemp}
+                                        </div>
+                                        <div>
+                                            <ArrowUpwardIcon />
+                                            &nbsp;
+                                            Nhiệt độ cao nhất:
+                                            &nbsp;
+                                    {apiMaxTemp === 0 ? 'None' : apiMaxTemp}
+                                        </div>
+                                    </GridItem>
+                                </GridContainer>
                             </CardBody>
                         </Card>
                     </GridItem>

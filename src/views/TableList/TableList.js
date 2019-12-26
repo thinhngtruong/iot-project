@@ -247,8 +247,8 @@ class TableList extends React.Component {
         let arrTemp = [temp10, temp11, temp12];
         let tempSort = arrTemp.sort((a, b) => b.value - a.value);
         let tableData1 = [];
-        tempSort.forEach(data => {
-            let temp = ["Tháng " + data.month, data.value + "°C"];
+        tempSort.forEach((data, index) => {
+            let temp = [index+1 + "", "Tháng " + data.month, data.value + "°C"];
             tableData1.push(temp);
         })
         let humi10 = { month: 10, value: localStorage.getItem("avgHumiMonth10") };
@@ -257,8 +257,8 @@ class TableList extends React.Component {
         let arrHumi = [humi10, humi11, humi12];
         let HumiTemp = arrHumi.sort((a, b) => b.value - a.value);
         let tableData2 = [];
-        HumiTemp.forEach(data => {
-            let humi = ["Tháng " + data.month, data.value + "%"];
+        HumiTemp.forEach((data,index) => {
+            let humi = [index+1 + "", "Tháng " + data.month, data.value + "%"];
             tableData2.push(humi);
         })
         return (
@@ -285,10 +285,8 @@ class TableList extends React.Component {
                                             Top các tháng có nhiệt độ trung bình cao nhất</div>
                                         <Table
                                             hover
-                                            tableHead={["Tháng", "Nhiệt độ"]}
-                                            tableData={tableData1}
-                                            coloredColls={[3]}
-                                            colorsColls={["primary"]}>
+                                            tableHead={["Thứ tự", "Tháng", "Nhiệt độ"]}
+                                            tableData={tableData1}>
                                         </Table>
                                     </GridItem>
                                     <GridItem xs={12} sm={6}>
@@ -298,10 +296,8 @@ class TableList extends React.Component {
                                         }}>Top các tháng có độ ẩm trung bình cao nhất</div>
                                         <Table
                                             hover
-                                            tableHead={["Tháng", "Độ ẩm"]}
+                                            tableHead={["Thứ tự", "Tháng", "Độ ẩm"]}
                                             tableData={tableData2}
-                                            coloredColls={[3]}
-                                            colorsColls={["primary"]}
                                         />
                                     </GridItem>
                                 </GridContainer>
